@@ -28,12 +28,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import joinery.DataFrame;
 import org.activiti.cycle.RepositoryException;
 import org.activiti.cycle.impl.connector.signavio.SignavioConnector;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 public class SignavioToXMI {
@@ -91,11 +91,24 @@ public class SignavioToXMI {
             }
         });
     }
+    
+    public void iterateSimple(String indexFile) throws IOException {
+        ProcessFilter filter = new ProcessFilter(models_dir);
+        DataFrame index = indexFile != null ? DataFrame.readCsv(indexFile) : filter.generateIndex(null);
+        List<String> modelFiles = filter.filterFilenames(index, models_dir, "bpmn20");
+        for (String file: modelFiles) {
+            System.out.println(file);
+            transform(new File(file), output_dir);
+        }
+    }
 
     public void transform(File inputFile, Path outputDir) {
         StringBuilder sb = null;
         String outputName = FilenameUtils.getBaseName(inputFile.getName()) + ".bpmn";
         Path outputFile = Paths.get(outputDir.toString(), outputName);
+        // Skip if such file exists (could have been generated before)
+        if (Files.exists(outputFile))
+            return;
         String xmi = null;
         try (InputStream is = new FileInputStream(inputFile)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -120,11 +133,19 @@ public class SignavioToXMI {
     }
 
     public static void main(String... args) {
-        String base_path = "/mnt/DATA/Darbas/KTU/code";
-        Path outputDir = Paths.get(base_path, "modelCollection_transformed");
+//        String base_path = "/mnt/DATA/Darbas/KTU/code";
+//        Path outputDir = Paths.get(base_path, "modelCollection_transformed");
+//        try {
+//            SignavioToXMI converter = new SignavioToXMI(Paths.get(base_path, "modelCollection_1559160740359"), outputDir);
+//            converter.iterate();
+//        } catch (IOException ex) {
+//            Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+
+        String basePath = "/mnt/DATA/Darbas/KTU/code";
         try {
-            SignavioToXMI converter = new SignavioToXMI(Paths.get(base_path, "modelCollection_1559160740359"), outputDir);
-            converter.iterate();
+            SignavioToXMI converter = new SignavioToXMI(Paths.get(basePath, "bpmai", "models"), Paths.get(basePath, "bpmai_transformed"));
+            converter.iterateSimple("bpmai_index.csv");
         } catch (IOException ex) {
             Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
         }
