@@ -98,7 +98,9 @@ public class SignavioToXMI {
         List<String> modelFiles = filter.filterFilenames(index, models_dir, "bpmn20");
         for (String file: modelFiles) {
             System.out.println(file);
-            transform(new File(file), output_dir);
+            File f = new File(file);
+            transform(f, output_dir);
+            Files.copy(Paths.get(file.replace(".json", ".svg")), Paths.get(output_dir.toString(), f.getName().replace(".json", ".svg")));
         }
     }
 
@@ -127,28 +129,29 @@ public class SignavioToXMI {
             return;
         try (FileWriter writer = new FileWriter(outputFile.toFile())) {
             writer.write(xmi);
+            Files.copy(Paths.get(inputFile.toString().replace(".json", ".svg")), Paths.get(outputFile.toString().replace(".bpmn", ".svg")));
         } catch (IOException ex) {
             Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public static void main(String... args) {
-//        String base_path = "/mnt/DATA/Darbas/KTU/code";
-//        Path outputDir = Paths.get(base_path, "modelCollection_transformed");
-//        try {
-//            SignavioToXMI converter = new SignavioToXMI(Paths.get(base_path, "modelCollection_1559160740359"), outputDir);
-//            converter.iterate();
-//        } catch (IOException ex) {
-//            Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-
-        String basePath = "/mnt/DATA/Darbas/KTU/code";
+        String base_path = "/mnt/DATA/Darbas/KTU/code";
+        Path outputDir = Paths.get(base_path, "modelCollection_transformed");
         try {
-            SignavioToXMI converter = new SignavioToXMI(Paths.get(basePath, "bpmai", "models"), Paths.get(basePath, "bpmai_transformed"));
-            converter.iterateSimple("bpmai_index.csv");
+            SignavioToXMI converter = new SignavioToXMI(Paths.get(base_path, "modelCollection_1559160740359"), outputDir);
+            converter.iterate();
         } catch (IOException ex) {
             Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+//        String basePath = "/mnt/DATA/Darbas/KTU/code";
+//        try {
+//            SignavioToXMI converter = new SignavioToXMI(Paths.get(basePath, "bpmai", "models"), Paths.get(basePath, "dataset", "bpmai"));
+//            converter.iterateSimple("bpmai_index.csv");
+//        } catch (IOException ex) {
+//            Logger.getLogger(SignavioToXMI.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
 }

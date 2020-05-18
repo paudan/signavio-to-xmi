@@ -74,6 +74,7 @@ public class ProcessFilter {
         File[] metadataFiles = model_dir.toFile().listFiles((File dir, String name) -> name.contains(".meta.json"));
         List<String> names = new ArrayList<>();
         List<String> modelNames = new ArrayList<>();
+        List<String> imageNames = new ArrayList<>();
         List<String> lang = new ArrayList<>();
         List<String> modelLang = new ArrayList<>();
         for (int i = 0; i < metadataFiles.length; i++) {
@@ -83,12 +84,13 @@ public class ProcessFilter {
             String fileName = Paths.get(results[0]).getFileName().toString();
             names.add(fileName);
             modelNames.add(fileName.replace(".meta", ""));
+            imageNames.add(fileName.replace(".json", ".svg"));
             lang.add(results[1]);
             modelLang.add(results[2]);
         }
         return new DataFrame(Collections.emptyList(), 
-                Arrays.asList("filename.meta", "filename", "language", "modelLanguage"),
-                Arrays.asList(names, modelNames, lang, modelLang));
+                Arrays.asList("filename.meta", "filename", "imageName", "language", "modelLanguage"),
+                Arrays.asList(names, modelNames, imageNames, lang, modelLang));
     }
 
     public DataFrame generateIndex(String outputFile) {
